@@ -5,26 +5,24 @@ class Easy:
     def __init__(self, image_array: np.ndarray):
         self.image_array=image_array
     
-    def apply_resize_pipeline(self, down_factor=0.85, up_factor=1.18, q=50) -> np.ndarray: #Легкое
+    def apply_resize_pipeline(self, down_factor=0.85, q=50) -> np.ndarray: # Легкое
         """Уменьшение и увеличивание изображения
             Args:
-            down_factor: уменьшение на 15%
-            up_factor: исходный размер
+            down_factor: уменьшение на 15% (0.85)
             q: сжатие JPEG (50-90)
         """
         
         img = self.image_array.astype(np.float32)
         h, w = img.shape[:2]
         
-        q=np.random.randint(low=50, high=90)
+        q = np.random.randint(low=50, high=90)
         
         # 1. Downscale (Уменьшение через INTER_AREA)
         w_down, h_down = int(w * down_factor), int(h * down_factor)
         img = cv2.resize(img, (w_down, h_down), interpolation=cv2.INTER_AREA)
         
-        # 2. Upscale (Увеличение через INTER_CUBIC)
-        w_up, h_up = int(w_down * up_factor), int(h_down * up_factor)
-        img = cv2.resize(img, (w_up, h_up), interpolation=cv2.INTER_CUBIC)
+        # 2. Upscale (Возвращаем СТРОГО в исходный размер оригинала w, h)
+        img = cv2.resize(img, (w, h), interpolation=cv2.INTER_CUBIC)
         
         # 3. JPEG
         _, buf = cv2.imencode('.jpg', img, [int(cv2.IMWRITE_JPEG_QUALITY), q])
