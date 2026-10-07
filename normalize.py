@@ -44,8 +44,8 @@ channels_squared_sum=0
 num_batches=0
 
 for x,y in train_data:
-    channels_sum+=torch.mean(y, dim=[0,2,3])
-    channels_squared_sum+=torch.mean(y**2, dim=[0,2,3])
+    channels_sum+=torch.mean(x, dim=[0,2,3])
+    channels_squared_sum+=torch.mean(x**2, dim=[0,2,3])
     
     num_batches+=1
 
@@ -54,3 +54,6 @@ variance=(channels_squared_sum/num_batches)-(mean**2)
 std=torch.sqrt(variance)
 
 print(f"mean (среднее) = {mean.tolist()}; std (отклонение) = {std.tolist()}")
+
+# mean (среднее) = [0.5126603245735168, 0.42385348677635193, 0.3761342763900757]
+# std (отклонение) = [0.2756892442703247, 0.25184452533721924, 0.24568717181682587]

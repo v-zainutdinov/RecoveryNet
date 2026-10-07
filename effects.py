@@ -32,7 +32,7 @@ original_path_faces=os.path.join("Train", "faces")
 photos_original=os.listdir(original_path_faces)
 print(f"Количество файлов: {len(photos_original)}")
 
-count_photo=10
+count_photo=1000
 
 list_percent=[30, 15, 15, 25, 15]
 bounds=get_boundaries(count_photo, list_percent)
