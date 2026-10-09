@@ -3,3 +3,4 @@ __pycache__/
 distorted_photos/
 original_photos/
 Train/
+all_predictions/

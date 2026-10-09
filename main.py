@@ -107,7 +107,7 @@ class UNetModel(nn.Module):
         
         self.out=nn.Conv2d(64, 3, 1, stride=1, padding=0)
         
-        self.sigmoid=nn.Sigmoid()
+        #self.sigmoid=nn.Sigmoid()
         
     def forward(self, x):
         x, y1 = self.enc_block1(x)
@@ -122,19 +122,20 @@ class UNetModel(nn.Module):
         x = self.dec_block3(x, y2)
         x = self.dec_block4(x, y1)
         
-        return self.sigmoid(x)
+        return self.out(x)
     
 model = UNetModel()
 model.to(device)
 
-opt=optim.Adam(model.parameters(), lr=0.001)
+opt=optim.Adam(model.parameters(), lr=0.0001)
 fn_loss=nn.MSELoss()
 
 #Цикл обучения
+
 model.train()
 EPOCH = 5
 
-#best score добавить
+best_loss=1e10
 
 for _ in range(EPOCH):
     train_tqdm = tqdm(train_data, leave=True)
@@ -157,6 +158,9 @@ for _ in range(EPOCH):
         loss_mean=1/lm_count * loss.item() + (1 - 1/lm_count)*loss_mean
         train_tqdm.set_description(f"Epoch [{_+1}/{EPOCH}], loss_mean={loss_mean:.3f}")
         
-st=model.state_dict()
-torch.save(st, "model_unet.tar")
+        if best_loss > loss.mean*1.005:
+            best_loss=loss_mean
+            st=model.state_dict()
+            torch.save(st, f'model_unet_{_}_{best_loss:.3f}')
+            
         
