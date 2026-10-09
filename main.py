@@ -50,7 +50,7 @@ transforms=tfs.Compose([
 ])
 
 d_train=DataSet(transforms=transforms)
-train_data=data.DataLoader(dataset=d_train, batch_size=32, shuffle=True, drop_last=False)
+train_data=data.DataLoader(dataset=d_train, batch_size=8, shuffle=True, drop_last=False)
 
 #Архитектура модели
 class UNetModel(nn.Module):
@@ -133,11 +133,12 @@ fn_loss=nn.MSELoss()
 #Цикл обучения
 
 model.train()
-EPOCH = 5
+EPOCH = 80
 
+mult=1.2
 best_loss=1e10
 
-for _ in range(EPOCH):
+for _e in range(EPOCH):
     train_tqdm = tqdm(train_data, leave=True)
     
     loss_mean=0
@@ -156,11 +157,13 @@ for _ in range(EPOCH):
         
         lm_count+=1
         loss_mean=1/lm_count * loss.item() + (1 - 1/lm_count)*loss_mean
-        train_tqdm.set_description(f"Epoch [{_+1}/{EPOCH}], loss_mean={loss_mean:.3f}")
+        train_tqdm.set_description(f"Epoch [{_e+1}/{EPOCH}], loss_mean={loss_mean:.3f}")
         
-        if best_loss > loss.mean*1.005:
+        if best_loss > loss_mean*mult:
             best_loss=loss_mean
             st=model.state_dict()
-            torch.save(st, f'model_unet_{_}_{best_loss:.3f}')
+            torch.save(st, os.path.join("models_save",f'model_unet_{_e}_{best_loss:.3f}'))
+        if _e == 20:
+            mult=1.01
             
         
