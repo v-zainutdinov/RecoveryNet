@@ -3,8 +3,8 @@ from torch.utils import data
 import torchvision.transforms.v2 as tfs
 from PIL import Image
 import os
-from main import DataSet, UNetModel
 
+from models import DataSet, UNetModel
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 transforms = tfs.Compose([
@@ -24,7 +24,7 @@ d_train = DataSet(transforms=transforms, train=True)
 
 # Загружаем модель (важно: map_location='cpu')
 model = UNetModel()
-st = torch.load("model_unet.tar", weights_only=True, map_location='cpu')  # ← вот это ключевое
+st = torch.load("model_unet_67_0012.tar", weights_only=True, map_location='cpu')  # ← вот это ключевое
 model.load_state_dict(st)
 model.to(device)
 model.eval()
