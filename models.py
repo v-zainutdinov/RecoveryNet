@@ -10,8 +10,7 @@ from PIL import Image
 from tqdm import tqdm
 
 class DataSet(data.Dataset):
-    def __init__(self, transforms, train=True):
-        path_train= "Train" if train else "Test"
+    def __init__(self, transforms, path_train):
         path_distorted_photo="distorted_photos"
         path_original_photo="original_photos"
         
