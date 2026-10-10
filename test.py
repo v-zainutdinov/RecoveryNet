@@ -20,11 +20,11 @@ def denormalize(img_tensor):
     return (img_tensor * std + mean).clamp(0, 1)
 
 # Загружаем тренировочный датасет
-d_train = DataSet(transforms=transforms, train=True)
+d_train = DataSet(transforms=transforms, path_train="Test")
 
 # Загружаем модель (важно: map_location='cpu')
 model = UNetModel()
-st = torch.load("model_unet_67_0012.tar", weights_only=True, map_location='cpu')
+st = torch.load(os.path.join("models_save", "model_unet_best.pt"), weights_only=True, map_location='cpu')
 model.load_state_dict(st)
 model.to(device)
 model.eval()

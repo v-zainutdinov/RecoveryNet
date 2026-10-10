@@ -16,8 +16,8 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 transforms=tfs.Compose([
     tfs.ToImage(),
     tfs.ToDtype(torch.float32, scale=True),
-    tfs.Normalize(mean=[0.5126603245735168, 0.42385348677635193, 0.3761342763900757],
-                  std=[0.2756892442703247, 0.25184452533721924, 0.24568717181682587])
+    tfs.Normalize(mean=[0.514139711856842, 0.42649322748184204, 0.37927815318107605],
+                  std=[0.275973916053772, 0.2523331940174103, 0.2463972270488739])
 ])
 
 d_train=DataSet(transforms, "Train")
@@ -36,15 +36,12 @@ fn_loss=nn.L1Loss()
 #Цикл обучения
 
 EPOCH = 80
-patience = 7
+patience = 5
 min_delta = 1e-3
 best_val= float("inf")
 bad_epochs = 0
 best_path = os.path.join("models_save", "model_unet_best.pt")
-os.makedirs("model_save", exist_ok=True)
-
-mult=1.2
-best_loss=1e10
+os.makedirs("models_save", exist_ok=True)
 
 for _e in range(EPOCH):
     model.train()
@@ -67,7 +64,7 @@ for _e in range(EPOCH):
         lm_count+=1
         loss_mean=1/lm_count * loss.item() + (1 - 1/lm_count)*loss_mean
         train_tqdm.set_description(f"Epoch [{_e+1}/{EPOCH}], loss_mean={loss_mean:.3f}")
-                
+  
     model.eval()
     Q_val=0
     count_val=0
@@ -81,14 +78,6 @@ for _e in range(EPOCH):
             
             Q_val+=loss.item()
             count_val+=1
-            
-            if best_loss > loss_mean*mult:
-                best_loss=loss_mean
-                st=model.state_dict()
-                torch.save(st, os.path.join("models_save",f'model_unet_{_e}_{best_loss:.3f}'))
-            if _e == 20:
-                mult=1.01
-            
     
     Q_val /= count_val
     
@@ -110,7 +99,9 @@ model.eval()
 t_train=DataSet(transforms, "Test")
 test_data =data.DataLoader(dataset=t_train, batch_size=16, shuffle=False, drop_last=False)
 
-Q=0
+
+total_loss = 0
+count_batches = 0
 
 torch.cuda.empty_cache()
 with torch.no_grad():
@@ -118,9 +109,13 @@ with torch.no_grad():
         x_test = x_test.to(device)
         y_test = y_test.to(device)
         
-        predict=model(x_test)
-        predict=torch.argmax(predict, dim=1)
-        Q += torch.sum(predict == y_test).item()
+        predict = model(x_test)
         
-Q /= len(t_train)
-print(Q)
+        # Считаем ту же функцию потерь, что и при обучении
+        loss = fn_loss(predict, y_test)
+        
+        total_loss += loss.item()
+        count_batches += 1
+        
+final_metric = total_loss / count_batches
+print(final_metric)
