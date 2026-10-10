@@ -106,7 +106,7 @@ class CreateDataset:
 
         # Файлы в папках
         train_photos_original = os.listdir(train_path_faces)[:self.count_img_train]
-        val_test_photos_original = os.listdir(val_test_faces)[:self.count_img_val+self.count_img_test]
+        val_test_photos_original = os.listdir(val_test_faces)[:(self.count_img_val+self.count_img_test)]
 
         half_size = len(val_test_photos_original) // 2
         
