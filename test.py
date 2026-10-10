@@ -24,7 +24,7 @@ d_train = DataSet(transforms=transforms, train=True)
 
 # Загружаем модель (важно: map_location='cpu')
 model = UNetModel()
-st = torch.load("model_unet_67_0012.tar", weights_only=True, map_location='cpu')  # ← вот это ключевое
+st = torch.load("model_unet_67_0012.tar", weights_only=True, map_location='cpu')
 model.load_state_dict(st)
 model.to(device)
 model.eval()
@@ -45,12 +45,7 @@ with torch.no_grad():
         orig_img = denormalize(y)
         dist_img = denormalize(x)
         
-        # Сохраняем три версии каждой картинки
-        tfs.ToPILImage()(dist_img).save(os.path.join(output_dir, f"img_{idx:02d}_distorted.png"))
-        tfs.ToPILImage()(pred_img).save(os.path.join(output_dir, f"img_{idx:02d}_predicted.png"))
-        tfs.ToPILImage()(orig_img).save(os.path.join(output_dir, f"img_{idx:02d}_original.png"))
-        
-        # И одну склеенную картинку (distorted | predicted | original)
+        # Одну склеенную картинку
         w = pred_img.shape[2]
         h = pred_img.shape[1]
         combined = torch.zeros(3, h, w * 3)
