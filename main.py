@@ -5,7 +5,6 @@ import torchvision.transforms.v2 as tfs
 import torch.optim as optim
 
 import os
-from PIL import Image
 
 from tqdm import tqdm
 
@@ -30,13 +29,13 @@ val_data=data.DataLoader(dataset=v_train, batch_size=8, shuffle=True, drop_last=
 model = UNetModel()
 model.to(device)
 
-opt=optim.Adam(model.parameters(), lr=0.0001)
+opt=optim.Adam(model.parameters(), lr=0.0001, weight_decay=0.001)
 fn_loss=nn.L1Loss()
 
 #Цикл обучения
 
 EPOCH = 80
-patience = 5
+patience = 7
 min_delta = 1e-3
 best_val= float("inf")
 bad_epochs = 0
@@ -93,7 +92,7 @@ for _e in range(EPOCH):
             print(f"Эпоха {_e}. Val loss не улучшается {patience} эпох, обучение остановлено.")
             break
         
-model.load_state_dict(torch.load(best_path, map_location=device))        
+model.load_state_dict(torch.load(best_path, map_location=device, weights_only=True))        
 model.eval()
 
 t_train=DataSet(transforms, "Test")
@@ -111,7 +110,6 @@ with torch.no_grad():
         
         predict = model(x_test)
         
-        # Считаем ту же функцию потерь, что и при обучении
         loss = fn_loss(predict, y_test)
         
         total_loss += loss.item()
