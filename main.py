@@ -15,8 +15,8 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 transforms=tfs.Compose([
     tfs.ToImage(),
     tfs.ToDtype(torch.float32, scale=True),
-    tfs.Normalize(mean=[0.514139711856842, 0.42649322748184204, 0.37927815318107605],
-                  std=[0.275973916053772, 0.2523331940174103, 0.2463972270488739])
+    tfs.Normalize(mean=[0.48689132928848267, 0.4494698643684387, 0.4100275933742523],
+                  std=[0.48689132928848267, 0.4494698643684387, 0.4100275933742523])
 ])
 
 d_train=DataSet(transforms, "Train")
