@@ -121,5 +121,5 @@ class CreateDataset:
         self.create_photo(test_photos_original, val_test_faces, os.path.join("Test", "original_photos"), os.path.join("Test", "distorted_photos"))
 
 if __name__ == "__main__":
-    dataset=CreateDataset(3000, 750, 500)
+    dataset=CreateDataset(10000, 1000, 750)
     dataset.create_dataset()

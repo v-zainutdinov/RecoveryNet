@@ -10,13 +10,13 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 transforms = tfs.Compose([
     tfs.ToImage(),
     tfs.ToDtype(torch.float32, scale=True),
-    tfs.Normalize(mean=[0.5126603245735168, 0.42385348677635193, 0.3761342763900757],
-                  std=[0.2756892442703247, 0.25184452533721924, 0.24568717181682587])
+    tfs.Normalize(mean=[0.48689132928848267, 0.4494698643684387, 0.4100275933742523],
+                  std=[0.48689132928848267, 0.4494698643684387, 0.4100275933742523])
 ])
 
 def denormalize(img_tensor):
-    mean = torch.tensor([0.5126603245735168, 0.42385348677635193, 0.3761342763900757]).view(3, 1, 1)
-    std = torch.tensor([0.2756892442703247, 0.25184452533721924, 0.24568717181682587]).view(3, 1, 1)
+    mean = torch.tensor([0.48689132928848267, 0.4494698643684387, 0.4100275933742523]).view(3, 1, 1)
+    std = torch.tensor([0.48689132928848267, 0.4494698643684387, 0.4100275933742523]).view(3, 1, 1)
     return (img_tensor * std + mean).clamp(0, 1)
 
 # Загружаем тренировочный датасет
@@ -35,7 +35,7 @@ os.makedirs(output_dir, exist_ok=True)
 
 # Прогоняем все 10 картинок
 with torch.no_grad():
-    for idx in range(len(d_train)):
+    for idx in range(200):
         x, y = d_train[idx]
         x_batch = x.unsqueeze(0).to(device)
         
