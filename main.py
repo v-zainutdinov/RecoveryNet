@@ -8,7 +8,7 @@ import os
 
 from tqdm import tqdm
 
-from models import UNetModel, DataSet
+from models import UNetModel, DataSet, L1_SSIM_Loss
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -30,7 +30,7 @@ model = UNetModel()
 model.to(device)
 
 opt=optim.Adam(model.parameters(), lr=0.0001, weight_decay=0.001)
-fn_loss=nn.L1Loss()
+fn_loss=L1_SSIM_Loss().to(device)
 
 #Цикл обучения
 

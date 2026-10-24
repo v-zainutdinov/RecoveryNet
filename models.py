@@ -1,13 +1,10 @@
 import torch
 from torch import nn
 from torch.utils import data
-import torchvision.transforms.v2 as tfs
-import torch.optim as optim
+import torch.nn.functional as F
 
 import os
 from PIL import Image
-
-from tqdm import tqdm
 
 class DataSet(data.Dataset):
     def __init__(self, transforms, path_train):
@@ -110,3 +107,45 @@ class UNetModel(nn.Module):
         x = self.dec_block4(x, y1)
         
         return self.out(x)
+    
+class L1_SSIM_Loss(nn.Module):
+    def __init__(self):
+        super().__init__()
+        W = torch.tensor([
+            [0.000058, 0.000275, 0.000834, 0.001625, 0.002030, 0.001625, 0.000834, 0.000275, 0.000058],
+            [0.000275, 0.001301, 0.003953, 0.007700, 0.009616, 0.007700, 0.003953, 0.001301, 0.000275],
+            [0.000834, 0.003953, 0.012009, 0.023391, 0.029211, 0.023391, 0.012009, 0.003953, 0.000834],
+            [0.001625, 0.007700, 0.023391, 0.045559, 0.056896, 0.045559, 0.023391, 0.007700, 0.001625],
+            [0.002030, 0.009616, 0.029211, 0.056896, 0.071054, 0.056896, 0.029211, 0.009616, 0.002030],
+            [0.001625, 0.007700, 0.023391, 0.045559, 0.056896, 0.045559, 0.023391, 0.007700, 0.001625],
+            [0.000834, 0.003953, 0.012009, 0.023391, 0.029211, 0.023391, 0.012009, 0.003953, 0.000834],
+            [0.000275, 0.001301, 0.003953, 0.007700, 0.009616, 0.007700, 0.003953, 0.001301, 0.000275],
+            [0.000058, 0.000275, 0.000834, 0.001625, 0.002030, 0.001625, 0.000834, 0.000275, 0.000058],
+        ]).float()
+        W = W / W.sum()
+        W = W.unsqueeze(dim=0).unsqueeze(dim=0).repeat(3, 1, 1, 1)
+        
+        self.register_buffer('W_Gausse', W)
+        self.stride: int = 1
+        self.padding: int = 4
+        self.kernel_size: tuple[int, int] = (9, 9)
+        self.C1=(0.01*1)**2
+        self.C2=(0.03*1)**2
+    
+    def forward(self, predict: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+        mu_x=F.conv2d(input=predict, weight=self.W_Gausse, stride=self.stride, padding=self.padding, groups=3)
+        mu_y=F.conv2d(input=target, weight=self.W_Gausse, stride=self.stride, padding=self.padding, groups=3)
+
+        var_x=F.conv2d(predict*predict, weight=self.W_Gausse, stride=self.stride, padding=self.padding, groups=3) - mu_x**2
+        var_y=F.conv2d(target*target, weight=self.W_Gausse, stride=self.stride, padding=self.padding, groups=3) - mu_y**2
+        covxy=F.conv2d(predict*target, weight=self.W_Gausse, stride=self.stride, padding=self.padding, groups=3) - mu_x * mu_y
+
+        MSSIM=(((2*mu_x*mu_y+self.C1)*(2*covxy+self.C2))/((mu_x**2+mu_y**2+self.C1)*(var_x+var_y+self.C2))).mean()
+        return 0.5*F.l1_loss(predict, target) + 5*(1-MSSIM)/2
+        
+                    
+                    
+                    
+                    
+                    
+            
