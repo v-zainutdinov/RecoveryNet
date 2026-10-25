@@ -8,7 +8,7 @@ import os
 
 from tqdm import tqdm
 
-from models import UNetModel, DataSet, L1_SSIM_Loss
+from src.models import UNetModel, DataSet, L1_SSIM_Loss
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

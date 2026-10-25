@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 
-from DefectUtils import finish, pick, pick_int, density, luma, light_dark, Overlay, random_walk
+from src.create_dataset.DefectUtils import finish, pick, pick_int, density, luma, light_dark, Overlay, random_walk
 
 
 # Параметры можно не передавать (None) — тогда они берутся случайно из диапазона в docstring.

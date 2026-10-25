@@ -141,8 +141,8 @@ class L1_SSIM_Loss(nn.Module):
         covxy=F.conv2d(predict*target, weight=self.W_Gausse, stride=self.stride, padding=self.padding, groups=3) - mu_x * mu_y
 
         MSSIM=(((2*mu_x*mu_y+self.C1)*(2*covxy+self.C2))/((mu_x**2+mu_y**2+self.C1)*(var_x+var_y+self.C2))).mean()
-        return 0.5*F.l1_loss(predict, target) + 2*(1-MSSIM)/2
-        # вместо 5 должно быть 5.0
+        return 0.5*F.l1_loss(predict, target) + 5*(1-MSSIM)/2
+        # вместо 5 должно быть 0.5
         
                     
                     

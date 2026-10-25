@@ -13,7 +13,7 @@
 
 | Оригинальное изображение | После очистки от шумов | После апскейла | Финальная колоризация |
 | :---: | :---: | :---: | :---: |
-| ![Original](assets/original.jpg) | ![Denoised](assets/denoised.jpg) | ![Upscaled](assets/upscaled.jpg) | ![Colorized](assets/colorized.jpg) |
+| ![Original](docs/assets/people_001_defect.PNG) | ![Predict](docs/assets/people_001_predict.PNG) | ![Upscaled](assets/upscaled.jpg) | ![Colorized](assets/colorized.jpg) |
 | *Поврежденный оригинал* | *Удаление артефактов* | *Повышение разрешения (x4)* | *Реалистичные цвета* |
 
 > 💡 *Нажмите на изображение, чтобы увеличить. Примеры взяты из датасета [Название датасета, например, VOC OldPhotos].*

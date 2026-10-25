@@ -1,12 +1,12 @@
 import numpy as np
 import cv2
 
-from DefectUtils import (finish, pick, pick_int, density, luma, coords, smoothstep,
+from src.create_dataset.DefectUtils import (finish, pick, pick_int, density, luma, coords, smoothstep,
                          smooth_field, blob_distance, fill_region, pick_background,
                          line_noise, tone_colors, light_dark, Overlay)
-from EasyDefects import EasyDefects
-from EasyAndMediumDefects import EasyAndMediumDefects
-from MediumDefects import MediumDefects
+from src.create_dataset.EasyDefects import EasyDefects
+from src.create_dataset.EasyAndMediumDefects import EasyAndMediumDefects
+from src.create_dataset.MediumDefects import MediumDefects
 
 
 # Параметры можно не передавать (None) — тогда они берутся случайно из диапазона в docstring.

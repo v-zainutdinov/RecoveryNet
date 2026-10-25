@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 
-from DefectUtils import (finish, pick, pick_int, density, luma, coords, smoothstep,
+from src.create_dataset.DefectUtils import (finish, pick, pick_int, density, luma, coords, smoothstep,
                          smooth_field, blob_distance, tone_colors, light_dark, Overlay)
 
 

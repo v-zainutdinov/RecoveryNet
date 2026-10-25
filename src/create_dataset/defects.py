@@ -3,11 +3,11 @@ import os
 import shutil
 import numpy as np
 
-from EasyDefects import EasyDefects
-from EasyAndMediumDefects import EasyAndMediumDefects
-from MediumDefects import MediumDefects
-from HardDefects import HardDefects
-from DefectUtils import to_old_tone
+from src.create_dataset.EasyDefects import EasyDefects
+from src.create_dataset.EasyAndMediumDefects import EasyAndMediumDefects
+from src.create_dataset.MediumDefects import MediumDefects
+from src.create_dataset.HardDefects import HardDefects
+from src.create_dataset.DefectUtils import to_old_tone
 
 # 30% - чистые фото
 # 15% - простые искажения
