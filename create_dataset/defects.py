@@ -50,7 +50,7 @@ class CreateDataset:
 
     def create_photo(self, original_photos: list, orginal_path: str, new_path_original: str, new_path_distorted: str) -> None:
         # Процентное соотношение
-        train_list_percent = [30, 15, 15, 25, 15]
+        train_list_percent = [20, 10, 20, 25, 25]
 
         # Получение индексов для разных типов дефектов
         bounds = self.get_boundaries(len(original_photos), train_list_percent)
@@ -121,5 +121,5 @@ class CreateDataset:
         self.create_photo(test_photos_original, val_test_faces, os.path.join("Test", "original_photos"), os.path.join("Test", "distorted_photos"))
 
 if __name__ == "__main__":
-    dataset=CreateDataset(10000, 1000, 750)
+    dataset=CreateDataset(15000, 1500, 4000)
     dataset.create_dataset()
