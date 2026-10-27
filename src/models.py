@@ -157,16 +157,27 @@ class PerceptualLoss(nn.Module):
         self.model.requires_grad_(False)
         
     def forward(self, predict: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-        batch_size = predict.shape[0]
-        x = self.normalize(torch.cat([predict, target]))
-        
-        loss = 0.0
+        with torch.no_grad():
+            target_features = {}
+            x_t = self.normalize(target)
+            for i, layer in enumerate(self.model):
+                x_t = layer(x_t)
+                if i in self.layers:
+                    target_features[i] = x_t
+
+        predict_features = {}
+        x_p = self.normalize(predict)
         for i, layer in enumerate(self.model):
-            x = layer(x)
+            x_p = layer(x_p)
             if i in self.layers:
-                w = self.weights[self.layers.index(i)]
-                # Например: [8, 3, 512, 512], первые 4 - predict, вторые 4 - target
-                loss = loss + w * F.mse_loss(x[:batch_size], x[batch_size:], reduction="mean")
+                predict_features[i] = x_p
+
+        # 3. Считаем лосс
+        loss = 0.0
+        for i in self.layers:
+            w = self.weights[self.layers.index(i)]
+            loss = loss + w * F.mse_loss(target_features[i], predict_features[i], reduction="mean")
+            
         return loss
             
 class CustomLoss(nn.Module):

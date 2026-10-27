@@ -8,7 +8,7 @@ import os
 
 from tqdm import tqdm
 
-from src.models import UNetModel, DataSet, CustomLoss
+from models import UNetModel, DataSet, CustomLoss
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -20,10 +20,10 @@ transforms=tfs.Compose([
 ])
 
 d_train=DataSet(transforms, "Train")
-train_data=data.DataLoader(dataset=d_train, batch_size=8, shuffle=True, drop_last=False)
+train_data=data.DataLoader(dataset=d_train, batch_size=4, shuffle=True, drop_last=False)
 
 v_train=DataSet(transforms, "Val")
-val_data=data.DataLoader(dataset=v_train, batch_size=8, shuffle=True, drop_last=False)
+val_data=data.DataLoader(dataset=v_train, batch_size=4, shuffle=True, drop_last=False)
 
     
 model = UNetModel()
