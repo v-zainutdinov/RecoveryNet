@@ -4,7 +4,8 @@ import torchvision.transforms.v2 as tfs
 from PIL import Image
 import os
 
-from src.models import DataSet, UNetModel
+from src.models import UNetModel, DataSet
+#python -m src.experiment_code.test
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 transforms = tfs.Compose([
