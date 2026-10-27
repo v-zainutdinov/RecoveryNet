@@ -2,6 +2,8 @@ import torch
 from torch import nn
 from torch.utils import data
 import torch.nn.functional as F
+import torchvision.transforms.v2 as tfs
+from torchvision import models
 
 import os
 from PIL import Image
@@ -108,45 +110,70 @@ class UNetModel(nn.Module):
         
         return self.out(x)
     
-class L1_SSIM_Loss(nn.Module):
+class SSIMLoss(nn.Module):
     def __init__(self):
-        super().__init__()
-        W = torch.tensor([
-            [0.000058, 0.000275, 0.000834, 0.001625, 0.002030, 0.001625, 0.000834, 0.000275, 0.000058],
-            [0.000275, 0.001301, 0.003953, 0.007700, 0.009616, 0.007700, 0.003953, 0.001301, 0.000275],
-            [0.000834, 0.003953, 0.012009, 0.023391, 0.029211, 0.023391, 0.012009, 0.003953, 0.000834],
-            [0.001625, 0.007700, 0.023391, 0.045559, 0.056896, 0.045559, 0.023391, 0.007700, 0.001625],
-            [0.002030, 0.009616, 0.029211, 0.056896, 0.071054, 0.056896, 0.029211, 0.009616, 0.002030],
-            [0.001625, 0.007700, 0.023391, 0.045559, 0.056896, 0.045559, 0.023391, 0.007700, 0.001625],
-            [0.000834, 0.003953, 0.012009, 0.023391, 0.029211, 0.023391, 0.012009, 0.003953, 0.000834],
-            [0.000275, 0.001301, 0.003953, 0.007700, 0.009616, 0.007700, 0.003953, 0.001301, 0.000275],
-            [0.000058, 0.000275, 0.000834, 0.001625, 0.002030, 0.001625, 0.000834, 0.000275, 0.000058],
-        ]).float()
-        W = W / W.sum()
-        W = W.unsqueeze(dim=0).unsqueeze(dim=0).repeat(3, 1, 1, 1)
+            super().__init__()
+            W = torch.tensor([
+                [0.000058, 0.000275, 0.000834, 0.001625, 0.002030, 0.001625, 0.000834, 0.000275, 0.000058],
+                [0.000275, 0.001301, 0.003953, 0.007700, 0.009616, 0.007700, 0.003953, 0.001301, 0.000275],
+                [0.000834, 0.003953, 0.012009, 0.023391, 0.029211, 0.023391, 0.012009, 0.003953, 0.000834],
+                [0.001625, 0.007700, 0.023391, 0.045559, 0.056896, 0.045559, 0.023391, 0.007700, 0.001625],
+                [0.002030, 0.009616, 0.029211, 0.056896, 0.071054, 0.056896, 0.029211, 0.009616, 0.002030],
+                [0.001625, 0.007700, 0.023391, 0.045559, 0.056896, 0.045559, 0.023391, 0.007700, 0.001625],
+                [0.000834, 0.003953, 0.012009, 0.023391, 0.029211, 0.023391, 0.012009, 0.003953, 0.000834],
+                [0.000275, 0.001301, 0.003953, 0.007700, 0.009616, 0.007700, 0.003953, 0.001301, 0.000275],
+                [0.000058, 0.000275, 0.000834, 0.001625, 0.002030, 0.001625, 0.000834, 0.000275, 0.000058],
+            ]).float()
+            W = W / W.sum()
+            W = W.unsqueeze(dim=0).unsqueeze(dim=0).repeat(3, 1, 1, 1)
+            
+            self.register_buffer('W_Gausse', W)
+            self.stride: int = 1
+            self.padding: int = 4
+            self.kernel_size: tuple[int, int] = (9, 9)
+            self.C1=(0.01*1)**2
+            self.C2=(0.03*1)**2
         
-        self.register_buffer('W_Gausse', W)
-        self.stride: int = 1
-        self.padding: int = 4
-        self.kernel_size: tuple[int, int] = (9, 9)
-        self.C1=(0.01*1)**2
-        self.C2=(0.03*1)**2
-    
     def forward(self, predict: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
         mu_x=F.conv2d(input=predict, weight=self.W_Gausse, stride=self.stride, padding=self.padding, groups=3)
         mu_y=F.conv2d(input=target, weight=self.W_Gausse, stride=self.stride, padding=self.padding, groups=3)
-
+    
         var_x=F.conv2d(predict*predict, weight=self.W_Gausse, stride=self.stride, padding=self.padding, groups=3) - mu_x**2
         var_y=F.conv2d(target*target, weight=self.W_Gausse, stride=self.stride, padding=self.padding, groups=3) - mu_y**2
         covxy=F.conv2d(predict*target, weight=self.W_Gausse, stride=self.stride, padding=self.padding, groups=3) - mu_x * mu_y
-
+    
         MSSIM=(((2*mu_x*mu_y+self.C1)*(2*covxy+self.C2))/((mu_x**2+mu_y**2+self.C1)*(var_x+var_y+self.C2))).mean()
-        return 0.5*F.l1_loss(predict, target) + 5*(1-MSSIM)/2
-        # вместо 5 должно быть 0.5
+        return (1-MSSIM)/2
+    
+class PerceptualLoss(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.layers = (3, 8, 15, 22)
+        self.weights = (25, 25, 25, 25)
+        self.normalize = tfs.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         
-                    
-                    
-                    
-                    
-                    
+        self.model = models.vgg16(weights=models.VGG16_Weights.DEFAULT).features[:max(self.layers)+1]
+        self.model.eval()
+        self.model.requires_grad_(False)
+        
+    def forward(self, predict: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+        batch_size = predict.shape[0]
+        x = self.normalize(torch.cat([predict, target]))
+        
+        loss = 0.0
+        for i, layer in enumerate(self.model):
+            x = layer(x)
+            if i in self.layers:
+                w = self.weights[self.layers.index(i)]
+                # Например: [8, 3, 512, 512], первые 4 - predict, вторые 4 - target
+                loss = loss + w * F.mse_loss(x[:batch_size], x[batch_size:], reduction="mean")
+        return loss
             
+class CustomLoss(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.ssim_loss = SSIMLoss()
+        self.perceptual_loss = PerceptualLoss()
+        
+    def forward(self, predict: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+        return 0.1 * F.l1_loss(predict, target) + 1 * self.ssim_loss(predict, target) + 1 * self.perceptual_loss(predict, target)

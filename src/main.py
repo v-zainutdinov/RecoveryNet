@@ -8,7 +8,7 @@ import os
 
 from tqdm import tqdm
 
-from src.models import UNetModel, DataSet, L1_SSIM_Loss
+from src.models import UNetModel, DataSet, CustomLoss
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -30,7 +30,7 @@ model = UNetModel()
 model.to(device)
 
 opt=optim.Adam(model.parameters(), lr=0.0001, weight_decay=0.001)
-fn_loss=L1_SSIM_Loss().to(device)
+fn_loss=CustomLoss().to(device)
 
 #Цикл обучения
 
@@ -95,8 +95,8 @@ for _e in range(EPOCH):
 model.load_state_dict(torch.load(best_path, map_location=device, weights_only=True))        
 model.eval()
 
-t_train=DataSet(transforms, "Test")
-test_data =data.DataLoader(dataset=t_train, batch_size=16, shuffle=False, drop_last=False)
+t_train = DataSet(transforms, "Test")
+test_data = data.DataLoader(dataset=t_train, batch_size=16, shuffle=False, drop_last=False)
 
 
 total_loss = 0
