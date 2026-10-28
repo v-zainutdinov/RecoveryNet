@@ -172,7 +172,6 @@ class PerceptualLoss(nn.Module):
             if i in self.layers:
                 predict_features[i] = x_p
 
-        # 3. Считаем лосс
         loss = 0.0
         for i in self.layers:
             w = self.weights[self.layers.index(i)]
