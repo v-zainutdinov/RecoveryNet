@@ -8,6 +8,13 @@ from torchvision import models
 import os
 from PIL import Image
 
+transforms=tfs.Compose([
+    tfs.ToImage(),
+    tfs.ToDtype(torch.float32, scale=True),
+    tfs.Normalize(mean=[0.48770615458488464, 0.4506271779537201, 0.4115591049194336],
+                  std=[0.2185600996017456, 0.21286065876483917, 0.21262872219085693])
+])
+
 class DataSet(data.Dataset):
     def __init__(self, transforms, path_train):
         path_distorted_photo="distorted_photos"

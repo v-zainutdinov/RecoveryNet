@@ -6,3 +6,4 @@ Train/
 all_predictions/
 models_save/
 Test/
+model_unet_best_attempt5.pt

@@ -8,16 +8,9 @@ import os
 
 from tqdm import tqdm
 
-from models import UNetModel, DataSet, CustomLoss
+from models import UNetModel, DataSet, CustomLoss, transforms
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-transforms=tfs.Compose([
-    tfs.ToImage(),
-    tfs.ToDtype(torch.float32, scale=True),
-    tfs.Normalize(mean=[0.48770615458488464, 0.4506271779537201, 0.4115591049194336],
-                  std=[0.2185600996017456, 0.21286065876483917, 0.21262872219085693])
-])
 
 d_train=DataSet(transforms, "Train")
 train_data=data.DataLoader(dataset=d_train, batch_size=4, shuffle=True, drop_last=False)
