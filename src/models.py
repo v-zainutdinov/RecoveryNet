@@ -11,8 +11,8 @@ from PIL import Image
 transforms=tfs.Compose([
     tfs.ToImage(),
     tfs.ToDtype(torch.float32, scale=True),
-    tfs.Normalize(mean=[0.48770615458488464, 0.4506271779537201, 0.4115591049194336],
-                  std=[0.2185600996017456, 0.21286065876483917, 0.21262872219085693])
+    tfs.Normalize(mean=[0.485, 0.456, 0.406],
+                  std=[0.229, 0.224, 0.225])
 ])
 
 class DataSet(data.Dataset):

@@ -1,26 +1,27 @@
 import torch
-from torch import nn
 from torch.utils import data
-import torchvision.transforms.v2 as tfs
 import torch.optim as optim
+from torch.amp import autocast, GradScaler
 
 import os
-
 from tqdm import tqdm
 
 from models import UNetModel, DataSet, CustomLoss, transforms
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device_amp = device.type 
 
 d_train=DataSet(transforms, "Train")
-train_data=data.DataLoader(dataset=d_train, batch_size=4, shuffle=True, drop_last=False)
+train_data=data.DataLoader(dataset=d_train, batch_size=1, shuffle=True, drop_last=False)
 
 v_train=DataSet(transforms, "Val")
-val_data=data.DataLoader(dataset=v_train, batch_size=4, shuffle=True, drop_last=False)
+val_data=data.DataLoader(dataset=v_train, batch_size=1, shuffle=True, drop_last=False)
 
-    
 model = UNetModel()
 model.to(device)
+
+# AMP
+scaler = GradScaler(device=device)
 
 opt=optim.Adam(model.parameters(), lr=0.0001, weight_decay=0.001)
 fn_loss=CustomLoss().to(device)
@@ -46,35 +47,39 @@ for _e in range(EPOCH):
         x_train = x_train.to(device)
         y_train = y_train.to(device)
         
-        predict=model(x_train)
-        loss=fn_loss(predict, y_train)
-        
         opt.zero_grad()
+        
+        with autocast(device_type=device_amp, dtype=torch.bfloat16):
+            
+            predict=model(x_train)
+            loss=fn_loss(predict, y_train)
+        
         loss.backward()
         opt.step()
         
         lm_count+=1
         loss_mean=1/lm_count * loss.item() + (1 - 1/lm_count)*loss_mean
         train_tqdm.set_description(f"Epoch [{_e+1}/{EPOCH}], loss_mean={loss_mean:.3f}")
-  
+            
     model.eval()
     Q_val=0
     count_val=0
     
-    for x_val, y_val in val_data:
-        x_val = x_val.to(device)
-        y_val = y_val.to(device)
-        with torch.no_grad():
-            predict=model(x_val)
-            loss=fn_loss(predict, y_val)
+    with torch.inference_mode():    
+        for x_val, y_val in val_data:
+            x_val = x_val.to(device)
+            y_val = y_val.to(device)
             
+            with autocast(device_type=device_amp, dtype=torch.bfloat16):
+                predict=model(x_val)
+                loss=fn_loss(predict, y_val)
+                        
             Q_val+=loss.item()
             count_val+=1
-    
+                
     Q_val /= count_val
-    
     print(f" | loss_mean={loss_mean:.3f}, Q_val={Q_val:.3f}")
-    
+                
     if best_val - Q_val > min_delta:
         best_val = Q_val
         bad_epochs = 0
@@ -84,7 +89,7 @@ for _e in range(EPOCH):
         if bad_epochs >= patience:
             print(f"Эпоха {_e}. Val loss не улучшается {patience} эпох, обучение остановлено.")
             break
-        
+  
 model.load_state_dict(torch.load(best_path, map_location=device, weights_only=True))        
 model.eval()
 

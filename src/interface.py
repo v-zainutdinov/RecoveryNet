@@ -59,8 +59,8 @@ def on_button_generate_photo() -> None:
     tensor_result = predict.detach().cpu().squeeze(0)
     
     # денормализация: x * std + mean (обратно к Normalize)
-    mean = torch.tensor([0.48770615458488464, 0.4506271779537201, 0.4115591049194336]).view(3, 1, 1)
-    std = torch.tensor([0.2185600996017456, 0.21286065876483917, 0.21262872219085693]).view(3, 1, 1)
+    mean = torch.tensor([0.485, 0.456, 0.406]).view(3, 1, 1)
+    std = torch.tensor([0.229, 0.224, 0.225]).view(3, 1, 1)
     tensor_result = (tensor_result * std + mean).clamp(0, 1)
     to_pil = T.ToPILImage()
     result_image = to_pil(tensor_result)

@@ -1,7 +1,6 @@
 import torch
 from torch.utils import data
 import torchvision.transforms.v2 as tfs
-from PIL import Image
 import os
 
 from src.models import UNetModel, DataSet
@@ -11,13 +10,13 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 transforms = tfs.Compose([
     tfs.ToImage(),
     tfs.ToDtype(torch.float32, scale=True),
-    tfs.Normalize(mean=[0.48770615458488464, 0.4506271779537201, 0.4115591049194336],
-                      std=[0.2185600996017456, 0.21286065876483917, 0.21262872219085693])
+    tfs.Normalize(mean=[0.485, 0.456, 0.406],
+                      std=[0.229, 0.224, 0.225])
 ])
 
 def denormalize(img_tensor):
-    mean = torch.tensor([0.48770615458488464, 0.4506271779537201, 0.4115591049194336]).view(3, 1, 1).to(device)
-    std = torch.tensor([0.2185600996017456, 0.21286065876483917, 0.21262872219085693]).view(3, 1, 1).to(device)
+    mean = torch.tensor([0.485, 0.456, 0.406]).view(3, 1, 1).to(device)
+    std = torch.tensor([0.229, 0.224, 0.225]).view(3, 1, 1).to(device)
     return (img_tensor * std + mean).clamp(0, 1)
 
 
